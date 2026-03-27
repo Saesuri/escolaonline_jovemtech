@@ -1,51 +1,65 @@
 services:
   db:
-      image: mongo:latest
-      container_name: mongodb_container
-      restart: always
-      ports:
-        - "27017:27017"
-      volumes:
-        - mongodb_data:/data/db
-      healthcheck:
-        test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
-        interval: 5s
-        timeout: 5s
-        retries: 5
-      networks:
-        - escola_network
+    image: mongo:latest
+    container_name: mongodb_container
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - escola_network
+
   app:
-      build: .
-      container_name: fastapi_app
-      ports:
-        - "8000:8000"
-      environment:
-        - MONGODB_URL=mongodb://db:27017/escola
-        - DATABASE_NAME=escola
-      depends_on:
-        db:
-          condition: service_healthy
-      volumes:
-        - .:/app
-      networks:
-        - escola_network
-  mongo-express:
-      image: mongo-express
-      restart: always
-      ports:
-        - "8081:8081"
-      environment:
-        ME_CONFIG_MONGODB_SERVER: db        
-        ME_CONFIG_MONGODB_PORT: 27017
-        ME_CONFIG_BASICAUTH_USERNAME: admin  
-        ME_CONFIG_BASICAUTH_PASSWORD: admin
-      depends_on:
-        - db                                 
-      networks:
-        - escola_network                       
+    build: .
+    container_name: fastapi_app
+    ports:
+      - "8000:8000"
+    environment:
+      - MONGODB_URL=mongodb://db:27017/escola
+      - DATABASE_NAME=escola
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - .:/app
+    networks:
+      - escola_network
+
+  mongo_express:
+    image: mongo-express:latest
+    ports:
+      - "8081:8081"
+    environment:
+      - ME_CONFIG_MONGODB_URL=mongodb://db:27017
+      - ME_CONFIG_MONGODB_ENABLE_ADMIN=true 
+    depends_on:
+      db:
+        condition: service_healthy
+    links:
+      - db
+    networks:
+      - escola_network
+  
+  redis:
+    image: redis:latest
+    container_name: redis_escola
+    networks:
+      - escola_network
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+      
 
 volumes:
   mongodb_data:
+  redis_data:
 
 networks:
   escola_network:

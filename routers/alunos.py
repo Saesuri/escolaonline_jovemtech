@@ -14,18 +14,18 @@ def read_alunos(db = Depends(get_db)):
     alunos = list(db.alunos.find())
     return alunos
 
-# @alunos_router.get("/alunos/{aluno_id}", response_model=Aluno)
-# def read_aluno(aluno_id: str, db = Depends(get_db)):
-#     """
-#     Retorna os detalhes de um aluno específico com base no ID fornecido.
-#     """
-#     if not ObjectId.is_valid(aluno_id):
-#         raise HTTPException(status_code=400, detail="ID de aluno inválido")
+@alunos_router.get("/alunos/{aluno_id}", response_model=Aluno)
+def read_aluno(aluno_id: str, db = Depends(get_db)):
+    """
+    Retorna os detalhes de um aluno específico com base no ID fornecido.
+    """
+    if not ObjectId.is_valid(aluno_id):
+        raise HTTPException(status_code=400, detail="ID de aluno inválido")
     
-#     db_aluno = db.alunos.find_one({"_id": ObjectId(aluno_id)})
-#     if db_aluno is None:
-#         raise HTTPException(status_code=404, detail="Aluno não encontrado")
-#     return db_aluno
+    db_aluno = db.alunos.find_one({"_id": ObjectId(aluno_id)})
+    if db_aluno is None:
+        raise HTTPException(status_code=404, detail="Aluno não encontrado")
+    return db_aluno
 
 @alunos_router.post("/alunos", response_model=Aluno)
 def create_aluno(aluno: Aluno = Body(...), db = Depends(get_db)):
